@@ -40,7 +40,7 @@ def insert_department(request):
             conn = get_connection()
             cursor = conn.cursor()
 
-            sql = ''' INSERT INTO departments (department_name, status) VALUES (:1, :2) '''
+            sql = ''' INSERT INTO departments (department_name, status) VALUES (%s, %s) '''
 
             cursor.execute(sql, (department_name, status))
             conn.commit()
@@ -53,7 +53,7 @@ def insert_department(request):
             conn.close()
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
-
+@csrf_exempt
 def get_department(request):
     conn = psycopg2.connect(
             user=DB_CONFIG['user'],
@@ -62,7 +62,7 @@ def get_department(request):
             port=5432,
             database=DB_CONFIG.get('database')
         )
-    print(conn)
+
     cursor = conn.cursor()
     try:
         conn = get_connection()
@@ -78,3 +78,23 @@ def get_department(request):
     finally:
         cursor.close()
         conn.close()
+
+@csrf_exempt
+def delete_department(request, department_id):
+    if request.method == "DELETE":
+        try: 
+           conn = get_connection()
+           cursor = conn.cursor()
+
+           sql = 'DELETE FROM departments WHERE department_id = %s'
+           cursor.execute(sql, (department_id,))
+
+           conn.commit()
+           return JsonResponse({'message': "department deleted successfully"})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+        finally:
+            cursor.close()
+            conn.close()
+    else:
+        return JsonResponse({'error': 'Invalid method'}, status=405)

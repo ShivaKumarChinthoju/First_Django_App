@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Department</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="p-10 bg-gray-100">
+
+    <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
+        <h1 class="text-xl font-bold mb-4">Add Department</h1>
+
+        <form id="department-form">
+            <label class="block mb-2">Department Name</label>
+            <input type="text" id="name" class="w-full border p-2 rounded mb-4" required>
+
+            <label class="block mb-2">Status</label>
+            <select id="status" class="w-full border p-2 rounded mb-4">
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+            </select>
+
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Submit</button>
+        </form>
+
+        <p id="message" class="mt-4 text-green-600 hidden">Submitted successfully!</p>
+    </div>
+
+    <script>
+        document.getElementById('department-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const payload = {
+                department_name: document.getElementById('name').value,
+                status: document.getElementById('status').value === 'true'
+            };
+
+            fetch('/insert-department/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.message) {
+                    document.getElementById('message').classList.remove('hidden');
+                    setTimeout(() => window.location.href = '/', 1500);
+                } else {
+                    alert("Error: " + response.error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

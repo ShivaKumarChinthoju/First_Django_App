@@ -85,9 +85,9 @@ def update_department(request, department_id):
         data = json.loads(request.body)
         department_name = data.get("department_name")
         status = data.get('status')
-
-        if not department_name or not status:
-            return JsonResponse({'message':"Department Name and Status."}, status=400)
+        # print(data)
+        if department_name is None or status is None:
+            return JsonResponse({'message':"Department Name and Status are required."}, status=400)
     
         if request.method == "PUT":
             try: 
@@ -127,3 +127,12 @@ def delete_department(request, department_id):
             conn.close()
     else:
         return JsonResponse({'error': 'Invalid method'}, status=405)
+
+
+from django.shortcuts import render
+
+def department_list_page(request):
+    return render(request, 'department_list.html')
+
+def department_form_page(request):
+    return render(request, 'department_form.html')

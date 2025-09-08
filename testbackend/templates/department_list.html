@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Departments CRUD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+</head>
+
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow p-6 rounded">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Departments</h2>
+            <button onclick="openForm()" class="bg-blue-600 text-white px-4 py-2 rounded">+ Add</button>
+        </div>
+
+        <table class="w-full table-auto border border-gray-200">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="px-4 py-2">ID</th>
+                    <th class="px-4 py-2">Name</th>
+                    <th class="px-4 py-2">Status</th>
+                    <th class="px-4 py-2">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="department-table">
+                <!-- rows will be injected -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Form Modal -->
+    <div id="formModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white p-6 rounded shadow-lg w-96">
+            <h3 class="text-xl font-semibold mb-4" id="formTitle">Add Department</h3>
+            <input type="hidden" id="deptId" />
+            <input type="text" id="deptName" placeholder="Department Name" class="w-full mb-4 border p-2 rounded" />
+            <select id="deptStatus" class="w-full mb-4 border p-2 rounded">
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+            </select>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeForm()" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+                <button onclick="submitForm()" class="bg-green-600 text-white px-4 py-2 rounded">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load departments
+        function loadDepartments() {
+            fetch('/get-department/')
+                .then(res => res.json())
+                .then(data => {
+                    const table = document.getElementById('department-table');
+                    table.innerHTML = '';
+                    data.forEach(dept => {
+                        table.innerHTML += `
+                            <tr class="border-b">
+                                <td class="px-4 py-2">${dept.id}</td>
+                                <td class="px-4 py-2">${dept.department_name}</td>
+                                <td class="px-4 py-2">${dept.status ? 'Active' : 'In Active'}</td>
+                                <td class="px-4 py-2">
+                                    <button onclick="editDepartment(${dept.id}, '${dept.department_name}', ${dept.status})" class="text-blue-600">Edit</button>
+                                    <button onclick="deleteDepartment(${dept.id})" class="text-red-600 ml-2">Delete</button>
+                                </td>
+                            </tr>`;
+                    });
+                });
+        }
+
+        // Open modal
+        function openForm() {
+            document.getElementById('deptId').value = '';
+            document.getElementById('deptName').value = '';
+            document.getElementById('deptStatus').value = 'true';
+            document.getElementById('formTitle').innerText = 'Add Department';
+            document.getElementById('formModal').classList.remove('hidden');
+        }
+
+        // Close modal
+        function closeForm() {
+            document.getElementById('formModal').classList.add('hidden');
+        }
+
+        // Edit department
+        function editDepartment(id, name, status) {
+            document.getElementById('deptId').value = id;
+            document.getElementById('deptName').value = name;
+            document.getElementById('deptStatus').value = status;
+            document.getElementById('formTitle').innerText = 'Edit Department';
+            document.getElementById('formModal').classList.remove('hidden');
+        }
+
+        // Submit (create or update)
+        function submitForm() {
+            const id = document.getElementById('deptId').value;
+            const name = document.getElementById('deptName').value;
+            const status = document.getElementById('deptStatus').value === "true";
+
+            const data = { department_name: name, status };
+
+            const url = id ? `/update_department/${id}/` : '/insert-department/';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(response => {
+                    closeForm();
+                    loadDepartments();
+                });
+        }
+
+        // Delete
+        function deleteDepartment(id) {
+            if (confirm('Are you sure you want to delete this department?')) {
+                fetch(`/delete_department/${id}/`, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(response => loadDepartments());
+            }
+        }
+
+        // Initial load
+        loadDepartments();
+    </script>
+</body>
+
+</html>
